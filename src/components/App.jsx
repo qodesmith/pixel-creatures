@@ -32,7 +32,7 @@ const blues = [
 export default function App() {
   const [num, setNum] = useState(0)
   const [size, setSize] = useState(10)
-  const [grid, setGrid] = useState(5)
+  const [squares, setSquares] = useState(5)
   const root = useMemo(() => document.querySelector(':root'))
   const isFirstRun = useRef(true)
 
@@ -71,17 +71,19 @@ export default function App() {
                 />
               </div>
               <div>
-                <label htmlFor="grid">Grid ({grid})</label>
+                <label htmlFor="squares">
+                  Squares ({squares} &times; {squares})
+                </label>
                 <input
-                  id="grid"
+                  id="squares"
                   type="range"
                   min="1"
                   max="20"
                   step="1"
                   className="db mt8"
-                  value={grid}
+                  value={squares}
                   onChange={e => {
-                    setGrid(e.target.value)
+                    setSquares(e.target.value)
                   }}
                 />
               </div>
@@ -92,7 +94,7 @@ export default function App() {
           {blues.map(color => {
             return (
               <div key={color + num} className="ma32">
-                <PixelCreature grid={grid} bg={`bg-${color}`} />
+                <PixelCreature squares={squares} bg={`bg-${color}`} />
               </div>
             )
           })}

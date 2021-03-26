@@ -1,8 +1,8 @@
 import {useMemo, memo} from 'react'
 import {cn} from 'helpers'
 
-export default memo(function PixelCreature({grid, bg}) {
-  const pixels = useMemo(() => makeGrid(grid))
+export default memo(function PixelCreature({squares, bg}) {
+  const pixels = useMemo(() => makeGrid(squares))
 
   return pixels.map((row, i) => {
     return (
@@ -15,16 +15,16 @@ export default memo(function PixelCreature({grid, bg}) {
   })
 })
 
-function makeGrid(size) {
-  const half = size / 2
+function makeGrid(squares) {
+  const half = squares / 2
   const num = Math.floor(half)
 
   const rows = []
 
-  for (let i = 0; i < size; i++) {
+  for (let i = 0; i < squares; i++) {
     const row = []
 
-    for (let j = 0; j < size; j++) {
+    for (let j = 0; j < squares; j++) {
       row.push(Math.random() < 0.5)
     }
 
