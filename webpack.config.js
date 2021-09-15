@@ -293,7 +293,7 @@ module.exports = (env, argv) => ({
       components: path.resolve(__dirname, 'src/components'),
       assets: path.resolve(__dirname, 'src/assets'),
       hooks: path.resolve(__dirname, 'src/hooks'),
-      helpers: path.resolve(__dirname, 'src/helpers')
+      helpers: path.resolve(__dirname, 'src/helpers'),
     },
 
     /*

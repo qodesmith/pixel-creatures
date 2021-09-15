@@ -1,5 +1,7 @@
 import PixelCreature from './PixelCreature'
-import {useEffect, useMemo, useState, useRef} from 'react'
+import {useLayoutEffect, useMemo, useState, useContext} from 'react'
+import PlusMinus from './PlusMinus'
+import {IntervalProvider, IntervalContext} from './IntervalContext'
 
 const blues = [
   'aqua',
@@ -31,17 +33,14 @@ const blues = [
 
 export default function App() {
   const [num, setNum] = useState(0)
-  const [size, setSize] = useState(10)
+  const [size, setSize] = useState(5)
   const [squares, setSquares] = useState(5)
+  const [numOfCreatures, setNumOfCreatures] = useState(5)
   const root = useMemo(() => document.querySelector(':root'))
-  const isFirstRun = useRef(true)
+  const [shouldAnimate, setShouldAnimate] = useState(true)
 
-  useEffect(() => {
-    if (!isFirstRun.current) {
-      root.style.setProperty('--size', `${size}px`)
-    } else {
-      isFirstRun.current = false
-    }
+  useLayoutEffect(() => {
+    root.style.setProperty('--size', `${size}px`)
   }, [size])
 
   return (
@@ -49,14 +48,39 @@ export default function App() {
       <section className="flex-grow-1 bg-black-80 fw4 white-80 tc pt24">
         <div className="df justify-center">
           <div className="df flex-col align-items-center">
-            <button
-              onClick={() => setNum(n => n + 1)}
-              className="ph12 pv4 f-initial">
-              Regenerate Creatures
-            </button>
-            <div className="mt8 df">
+            <div>
+              <button
+                onClick={() => setNum(n => n + 1)}
+                className="ph12 pv4 f-initial">
+                Regenerate Creatures
+              </button>
+              <button
+                className="ph12 pv4 f-initial ml8"
+                onClick={() => setShouldAnimate(val => !val)}>
+                {shouldAnimate ? 'Stop' : 'Start'} Animating
+              </button>
+              <IntervalProvider>
+                <Test />
+              </IntervalProvider>
+            </div>
+            <div className="df mv16 ba-1px pa12">
+              <div>
+                <label htmlFor="creatures">Creatures ({numOfCreatures})</label>
+                <PlusMinus setter={setNumOfCreatures} />
+                <input
+                  id="creatures"
+                  type="range"
+                  min="1"
+                  max="300"
+                  step="1"
+                  className="db mt8"
+                  value={numOfCreatures}
+                  onChange={e => setNumOfCreatures(+e.target.value)}
+                />
+              </div>
               <div>
                 <label htmlFor="size">Size ({size})</label>
+                <PlusMinus setter={setSize} />
                 <input
                   id="size"
                   type="range"
@@ -66,7 +90,7 @@ export default function App() {
                   className="db mt8"
                   value={size}
                   onChange={e => {
-                    setSize(e.target.value)
+                    setSize(+e.target.value)
                   }}
                 />
               </div>
@@ -74,6 +98,7 @@ export default function App() {
                 <label htmlFor="squares">
                   Squares ({squares} &times; {squares})
                 </label>
+                <PlusMinus setter={setSquares} />
                 <input
                   id="squares"
                   type="range"
@@ -91,15 +116,29 @@ export default function App() {
           </div>
         </div>
         <div className="df flex-wrap justify-center">
-          {blues.map(color => {
-            return (
-              <div key={color + num} className="ma32">
-                <PixelCreature squares={squares} bg={`bg-${color}`} />
-              </div>
-            )
-          })}
+          <IntervalProvider>
+            {Array.from({length: numOfCreatures}, (_, i) => {
+              const color = blues[i % blues.length]
+
+              return (
+                <div key={color + i} style={{margin: 10}}>
+                  <PixelCreature
+                    squares={squares}
+                    bg={`bg-${color}`}
+                    shouldAnimate={shouldAnimate && !((i - 2) % 3)} // Every 3rd one animates.
+                    regenerateTrigger={num}
+                  />
+                </div>
+              )
+            })}
+          </IntervalProvider>
         </div>
       </section>
     </div>
   )
+}
+
+function Test() {
+  const num = useContext(IntervalContext)
+  return <span>{num}</span>
 }

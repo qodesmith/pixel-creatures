@@ -1,10 +1,50 @@
-import {useMemo, memo} from 'react'
+import {useMemo, useLayoutEffect, memo, useContext, useRef} from 'react'
+import {IntervalContext} from './IntervalContext'
 import {cn} from 'helpers'
+import usePrevious from 'hooks/usePrevious'
 
-export default memo(function PixelCreature({squares, bg}) {
-  const pixels = useMemo(() => makeGrid(squares))
+export default memo(function PixelCreature({
+  squares,
+  bg,
+  shouldAnimate,
 
-  return pixels.map((row, i) => {
+  // Static button that causes every creature to regenerate.
+  regenerateTrigger,
+}) {
+  const initialPixels = useMemo(() => makeGrid(squares), [])
+  const pixelsRef = useRef(initialPixels)
+  const previousRegenerateTrigger = usePrevious(regenerateTrigger)
+
+  // App-wide interval setting the cadence of regeneration.
+  const intervalTrigger = useContext(shouldAnimate ? IntervalContext : {})
+  const previousIntervalTrigger = usePrevious(intervalTrigger)
+
+  console.log(regenerateTrigger !== previousRegenerateTrigger)
+
+  useLayoutEffect(() => {
+    if (shouldAnimate || regenerateTrigger !== previousRegenerateTrigger) {
+      pixelsRef.current = makeGrid(squares)
+    }
+  }, [
+    shouldAnimate, //
+    regenerateTrigger,
+    previousRegenerateTrigger,
+    intervalTrigger,
+  ])
+
+  const x = [
+    4332423423423, //
+    23423423432423,
+    4324312345245,
+    5645634563456,
+    65354634635654,
+    345634563465346345,
+    6535636534636,
+    43563456363456,
+    3242394802384029834092384092384098,
+  ]
+
+  return pixelsRef.current.map((row, i) => {
     return (
       <div key={i} className="df justify-center">
         {row.map((bool, j) => {
@@ -16,21 +56,22 @@ export default memo(function PixelCreature({squares, bg}) {
 })
 
 function makeGrid(squares) {
-  const half = squares / 2
-  const num = Math.floor(half)
-
+  const half = Math.floor(squares / 2)
   const rows = []
 
   for (let i = 0; i < squares; i++) {
-    const row = []
+    const arr1 = []
+    for (let j = 0; j < half; j++) arr1.push(getBool())
 
-    for (let j = 0; j < squares; j++) {
-      row.push(Math.random() < 0.5)
-    }
+    const arr2 = arr1.slice().reverse()
+    if (squares % 2) arr1.push(getBool())
 
-    row.splice(row.length - num, num, ...row.slice(0, num).reverse())
-    rows.push(row)
+    rows.push(arr1.concat(arr2))
   }
 
   return rows
+}
+
+function getBool() {
+  return Math.random() < 0.5
 }
